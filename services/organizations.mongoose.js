@@ -242,7 +242,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
-//const TestURL = `mongodb://localhost:27017/eowyn-reconsidere-enterprise`;
 const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@ec2-18-216-31-156.us-east-2.compute.amazonaws.com:27017/reconsideredb'
 const options = {
   autoIndex: false,
@@ -253,7 +252,7 @@ const options = {
 };
 
 mongoose.connect(TestURL, options).catch(err => {
-  console.error('Erro ao conectar no banco: ' + err.stack);
+  console.error('ERE002' + err.stack);
 });
 
 organizations.route('/add').post(function (req, res) {
@@ -261,57 +260,49 @@ organizations.route('/add').post(function (req, res) {
   organization
     .save()
     .then(item => {
-      res.status(200).json({ Organizations: 'added successfully' });
+      res.status(200).json({ Organizations: 'SRE001' });
     })
     .catch(err => {
-      res.status(400).send('unable to save to database' + err.stack);
+      res.status(400).send('ERE006' + err.stack);
     });
 });
 
-//Defined get data(index or listing) route
-// organizations.route('/').get(function(req, res) {
-//   organizationModel.find(function(err, org) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       res.json(org);
-//     }
-//   });
-// });
-
-/**Return organization id only.  This parameter id, are the id of user*/
-organizations.route('/organizationid/:id').get(function (req, res) {
+organizations.route('/organizationid/:id').get(function (req, res, next) {
   organizationModel.findOne({ 'users._id': req.params.id }, function (err, org) {
-    if (!org) return next(new Error('Not found organization'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       res.json(org._id);
     }
   });
 });
 
-/**Return organization object */
-organizations.route('/:id').get(function (req, res) {
-  organizationModel.findById(req.params.id,function (err, org) {
+
+organizations.route('/:id').get(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE005')));
     } else {
       res.json(org);
     }
   });
 });
 
-// // Defined edit route
-organizations.route('/edit/:id').get(function (req, res) {
+
+organizations.route('/edit/:id').get(function (req, res, next) {
   var id = req.params.id;
   organizationModel.findById(id, function (err, organization) {
-    res.json(organization);
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(organization);
+    }
   });
 });
 
-// //  Defined update route
+
 organizations.route('/update/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       org.email = req.body.email;
       org.company = req.body.company;
@@ -330,21 +321,19 @@ organizations.route('/update/:id').put(function (req, res, next) {
       org
         .save()
         .then(org => {
-          res.json('Update complete');
+          res.json('SRE001');
         })
         .catch(err => {
-          res.status(400).send('unable to update the database');
+          return next(new Error(res.status(400).send('ERE006')));
         });
     }
   });
 });
 
-//#region CRUD - User
-
-organizations.route('/:id/user').get(function (req, res) {
+organizations.route('/:id/user').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.users);
     }
@@ -356,7 +345,9 @@ organizations.route('/user/authenticate').post(function (req, res, next) {
     { 'users.email': req.body.email },
     { 'users.$': 1 },
     function (err, org) {
-      if (!org) return next(new Error('Login error.'));
+      if (!org) {
+        return next(new Error(res.status(400).send('ERE001')));
+      }
       else {
         res.json(org.users[0]);
       }
@@ -369,20 +360,20 @@ organizations.route('/add/user/:id').post(function (req, res, next) {
     { _id: req.params.id, 'users.email': req.body.email },
     function (err, obj) {
       if (obj) {
-        return res.status(400).send('Email already in use.');
+        return next(new Error(res.status(400).send('WRE005')));
       } else {
         organizationModel.findById(req.params.id, function (err, org) {
-          if (!org) return next(new Error('Could not load Document'));
+          if (!org) return next(new Error(res.status(400).send('ERE005')));
           else {
             (req.body.password = req.body.password), 10;
             org.users.push(req.body);
             org
               .updateOne(org)
               .then(org => {
-                res.json('save user complete');
+                res.json('SRE001');
               })
               .catch(err => {
-                res.status(400).send('unable to save user');
+                return next(new Error(res.status(400).send('ERE006')));
               });
           }
         });
@@ -393,7 +384,7 @@ organizations.route('/add/user/:id').post(function (req, res, next) {
 
 organizations.route('/update/user/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       var user = org.users.id(req.body._id);
       if (!user) {
@@ -401,33 +392,30 @@ organizations.route('/update/user/:id').post(function (req, res, next) {
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       } else {
         user.set(req.body);
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       }
     }
   });
 });
 
-//#endregion
-
-//#region CRUD  - Vehicle
-organizations.route('/vehicle/:id').get(function (req, res) {
+organizations.route('/vehicle/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.vehicles);
     }
@@ -436,16 +424,16 @@ organizations.route('/vehicle/:id').get(function (req, res) {
 
 organizations.route('/add/vehicle/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       org.vehicles.push(req.body);
       org
         .update(org)
         .then(org => {
-          res.json('Update complete');
+          res.json('SRE001');
         })
         .catch(err => {
-          res.status(400).send('unable to update the database');
+          return next(new Error(res.status(400).send('ERE006')));
         });
     }
   });
@@ -453,7 +441,7 @@ organizations.route('/add/vehicle/:id').post(function (req, res, next) {
 
 organizations.route('/update/vehicle/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       var vehicle = org.vehicles.id(req.body._id);
       if (!vehicle) {
@@ -461,20 +449,20 @@ organizations.route('/update/vehicle/:id').put(function (req, res, next) {
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       } else {
         vehicle.set(req.body);
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       }
     }
@@ -485,7 +473,7 @@ organizations
   .route('/remove/vehicle/:organizationId/:id')
   .delete(function (req, res) {
     organizationModel.findById(req.params.organizationId, function (err, org) {
-      if (!org) return next(new Error('Could not load Document'));
+      if (!org) return next(new Error(res.status(400).send('ERE005')));
       else {
         var vehicle = org.vehicles.id(req.params.id);
         if (vehicle) {
@@ -493,24 +481,19 @@ organizations
           org
             .update(org)
             .then(org => {
-              res.json('remove complete');
+              res.json('SRE001');
             })
             .catch(err => {
-              res.status(400).send('unable to delete schedule the database');
+              return next(new Error(res.status(400).send('ERE006')));
             });
         }
       }
     });
   });
-
-//#endregion
-
-//#region CRUD  - Scheduler
-
-organizations.route('/scheduler/:id').get(function (req, res) {
+organizations.route('/scheduler/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.georoutes);
     }
@@ -519,16 +502,16 @@ organizations.route('/scheduler/:id').get(function (req, res) {
 
 organizations.route('/add/scheduler/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       org.georoutes = req.body;
       org
         .save(org)
         .then(org => {
-          res.json('Update complete');
+          res.json('SRE001');
         })
         .catch(err => {
-          res.status(400).send('unable to update the database');
+          return next(new Error(res.status(400).send('ERE006')));
         });
     }
   });
@@ -536,7 +519,7 @@ organizations.route('/add/scheduler/:id').post(function (req, res, next) {
 
 organizations.route('/update/scheduler/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       var route = org.georoutes.id(req.body._id);
       if (!route) {
@@ -544,20 +527,20 @@ organizations.route('/update/scheduler/:id').put(function (req, res, next) {
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       } else {
         route.set(req.body);
         org
           .update(org)
           .then(org => {
-            res.json('Update complete');
+            res.json('SRE001');
           })
           .catch(err => {
-            res.status(400).send('unable to update the database');
+            return next(new Error(res.status(400).send('ERE006')));
           });
       }
     }
@@ -568,7 +551,7 @@ organizations
   .route('/remove/scheduler/:organizationId/:id')
   .delete(function (req, res) {
     organizationModel.findById(req.params.organizationId, function (err, org) {
-      if (!org) return next(new Error('Could not load Document'));
+      if (!org) return next(new Error(res.status(400).send('ERE005')));
       else {
         var route = org.georoutes.id(req.params.id);
         if (route) {
@@ -576,31 +559,20 @@ organizations
           org
             .update(org)
             .then(org => {
-              res.json('remove complete');
+              res.json('SRE001');
             })
             .catch(err => {
-              res.status(400).send('unable to delete schedule the database');
+              return next(new Error(res.status(400).send('ERE006')));
             });
         }
       }
     });
   });
 
-//#endregion
-
-// // Defined delete | remove | destroy route
-// signUpRoutes.route('/delete/:id').get(function (req, res) {
-//   SignUp.findByIdAndRemove({_id: req.params.id}, function(err, signUp){
-//        if(err) res.json(err);
-//        else res.json('Successfully removed');
-//    });
-// });
-
-//#region CRUD - Material
-organizations.route('/hierarchy/:id').get(function (req, res) {
+organizations.route('/hierarchy/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.hierarchy);
     }
@@ -609,27 +581,25 @@ organizations.route('/hierarchy/:id').get(function (req, res) {
 
 organizations.route('/add/hierarchy/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       org.hierarchy = req.body;
       org
         .update(org)
         .then(org => {
-          res.json('Update complete');
+          res.json('SRE001');
         })
         .catch(err => {
-          res.status(400).send('unable to update the database');
+          return next(new Error(res.status(400).send('ERE006')));
         });
     }
   });
 });
-//#endregion
 
-//#region CRUD - pricing
-organizations.route('/pricing/:id').get(function (req, res) {
+organizations.route('/pricing/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
-      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.hierarchy);
     }
@@ -638,22 +608,20 @@ organizations.route('/pricing/:id').get(function (req, res) {
 
 organizations.route('/add/pricing/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error('Could not load Document'));
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
       org.hierarchy = req.body;
       org
         .update(org)
         .then(org => {
-          res.json('Update complete');
+          res.json('SRE001');
         })
         .catch(err => {
-          res.status(400).send('unable to update the database');
+          return next(new Error(res.status(400).send('ERE006')));
         });
     }
   });
 });
-
-//#endregion
 
 app.use('/organization', organizations);
 module.exports = app;
