@@ -75,16 +75,16 @@ var model = {
       active: Boolean
     }
   ],
-  fixedCost:[{
-    name:String,
-    date:[Date],
-    price:[Number],
-    active:Boolean
-  }],
   processingChain: [
     {
       name: String,
       description: String,
+      fixedCost: [{
+        name: String,
+        date: [Date],
+        price: [Number],
+        active: Boolean
+      }],
       hierarchy: [{}]
     }
   ],
