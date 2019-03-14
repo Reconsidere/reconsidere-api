@@ -96,7 +96,14 @@ var OrganizationSchema = new mongoose.Schema({
           date: Date,
           distance: Number,
           priceFuel: Number,
-          vehicle: Vehicle,
+          vehicle: [{
+            carPlate: String,
+            emptyVehicleWeight: Number,
+            weightCapacity: Number,
+            active: Boolean,
+            fuel: Number,
+            typeFuel: String
+          }],
           averageConsumption: Number,
         }
       ]
@@ -652,6 +659,34 @@ organizations.route('/processingchain/:id').get(function (req, res, next) {
 });
 
 organizations.route('/update/processingchain/:id').put(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      org.processingChain = req.body;
+      org
+        .update(org)
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+
+organizations.route('/collectioncost/:id').get(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(org.processingChain);
+    }
+  });
+});
+
+organizations.route('/update/collectioncost/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
