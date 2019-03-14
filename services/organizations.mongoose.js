@@ -96,6 +96,7 @@ var OrganizationSchema = new mongoose.Schema({
           date: Date,
           distance: Number,
           priceFuel: Number,
+          active:Boolean,
           vehicle: [{
             carPlate: String,
             emptyVehicleWeight: Number,
