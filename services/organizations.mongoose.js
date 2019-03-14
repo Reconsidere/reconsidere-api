@@ -89,7 +89,17 @@ var OrganizationSchema = new mongoose.Schema({
         price: [Number],
         active: Boolean
       }],
-      hierarchy: [{}]
+      hierarchy: [{}],
+      collectionCost:[
+        {
+          name: String,
+          date: Date,
+          distance: Number,
+          priceFuel: Number,
+          vehicle: Vehicle,
+          averageConsumption: Number,
+        }
+      ]
     }
   ],
   hierarchy: {
