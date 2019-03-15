@@ -89,6 +89,14 @@ var OrganizationSchema = new mongoose.Schema({
         price: [Number],
         active: Boolean
       }],
+      expenses:[{
+        type:String,
+        description: String,
+        date:Date,
+        price:Number
+        
+      }
+      ],
       hierarchy: [{}],
       collectionCost:[
         {
@@ -106,6 +114,8 @@ var OrganizationSchema = new mongoose.Schema({
             typeFuel: String
           }],
           averageConsumption: Number,
+          price: Number,
+          consumption: Number
         }
       ]
     }
@@ -716,6 +726,34 @@ organizations.route('/fixedcost/:id').get(function (req, res, next) {
 });
 
 organizations.route('/update/fixedcost/:id').put(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      org.processingChain = req.body;
+      org
+        .update(org)
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+
+organizations.route('/expanses/:id').get(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(org.processingChain);
+    }
+  });
+});
+
+organizations.route('/update/expanses/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
