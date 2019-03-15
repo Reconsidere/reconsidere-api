@@ -77,49 +77,42 @@ var OrganizationSchema = new mongoose.Schema({
       active: Boolean
     }
   ],
-  processingChain: [
-    {
+  expenses: {
+    date: Date, 
+    fixed: [{
       name: String,
+      type: String,
       description: String,
       date: Date,
-      active: Boolean,
-      fixedCost: [{
-        name: String,
-        date: [Date],
-        price: [Number],
-        active: Boolean
-      }],
-      expenses:[{
-        type:String,
-        description: String,
-        date:Date,
-        price:Number
-        
-      }
-      ],
-      hierarchy: [{}],
-      collectionCost:[
-        {
-          name: String,
-          date: Date,
-          distance: Number,
-          priceFuel: Number,
-          active:Boolean,
-          vehicle: [{
-            carPlate: String,
-            emptyVehicleWeight: Number,
-            weightCapacity: Number,
-            active: Boolean,
-            fuel: Number,
-            typeFuel: String
-          }],
-          averageConsumption: Number,
-          price: Number,
-          consumption: Number
-        }
-      ]
-    }
-  ],
+      cost: Number,
+      active: Boolean
+    }],
+    inconstant: [{
+      name: String,
+      type: String,
+      description: String,
+      date: Date,
+      quantity: Number,
+      cost: Number,
+      amount: Number
+    }],
+    uncertain: [{
+      name: String,
+      type: String,
+      description: String,
+      date: Date,
+      quantity: Number,
+      cost: Number,
+      amount: Number
+    }]
+  },
+  processingChain: [{
+    name: String,
+    description: String,
+    date: Date,
+    active: Boolean,
+    hierarchy: [{}],
+  }],
   hierarchy: {
     solid: {
       materials: {
@@ -246,6 +239,7 @@ var OrganizationSchema = new mongoose.Schema({
       name: String,
       archived: Boolean,
       status: String,
+      distance: Number,
       schedules: [
         {
           date: Date,
