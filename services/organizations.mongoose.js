@@ -79,11 +79,18 @@ var OrganizationSchema = new mongoose.Schema({
       active: Boolean
     }
   ],
-  expenses: {
+  processingChain: [{
+    name: String,
+    description: String,
+    date: Date,
+    active: Boolean,
+    hierarchy: [{}],
+  }],
+  expenses: [{
     date: Date,
     fixed: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       cost: Number,
@@ -91,7 +98,7 @@ var OrganizationSchema = new mongoose.Schema({
     }],
     inconstant: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       quantity: Number,
@@ -100,20 +107,13 @@ var OrganizationSchema = new mongoose.Schema({
     }],
     uncertain: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       quantity: Number,
       cost: Number,
       amount: Number
     }]
-  },
-  processingChain: [{
-    name: String,
-    description: String,
-    date: Date,
-    active: Boolean,
-    hierarchy: [{}],
   }],
   hierarchy: {
     solid: {
@@ -683,19 +683,7 @@ organizations.route('/update/processingchain/:id').put(function (req, res, next)
 });
 
 
-organizations.route('/fixedcost/:id').get(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (err) {
-      return next(new Error(res.status(400).send('ERE008')));
-    } else {
-      res.json(org.expenses);
-    }
-  });
-});
-
-
-
-organizations.route('/expanses/:id/:date').get(function (req, res, next) {
+organizations.route('/expenses/:id/:date').get(function (req, res, next) {
   var month = moment(new Date(req.params.date)).format('M');
   var year = moment(new Date(req.params.date)).format('YYYY');
   organizationModel.aggregate([
@@ -717,7 +705,7 @@ organizations.route('/expanses/:id/:date').get(function (req, res, next) {
 
 });
 
-organizations.route('/update/expanses/:id').put(function (req, res, next) {
+organizations.route('/update/expenses/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
@@ -728,6 +716,7 @@ organizations.route('/update/expanses/:id').put(function (req, res, next) {
           res.json('SRE001');
         })
         .catch(err => {
+          console.log(err);
           return next(new Error(res.status(400).send('ERE006')));
         });
     }

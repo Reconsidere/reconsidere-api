@@ -75,8 +75,15 @@ var model = {
       active: Boolean
     }
   ],
+  processingChain: [{
+    name: String,
+    description: String,
+    date: Date,
+    active: Boolean,
+    hierarchy: [{}],
+  }],
   expenses: {
-    date: Date, 
+    date: Date,
     fixed: [{
       name: String,
       type: String,
@@ -104,13 +111,6 @@ var model = {
       amount: Number
     }]
   },
-  processingChain: [{
-    name: String,
-    description: String,
-    date: Date,
-    active: Boolean,
-    hierarchy: [{}],
-  }],
   hierarchy: {
     solid: {
       materials: {
