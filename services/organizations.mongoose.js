@@ -693,6 +693,8 @@ organizations.route('/fixedcost/:id').get(function (req, res, next) {
   });
 });
 
+
+
 organizations.route('/expanses/:id/:date').get(function (req, res, next) {
   var month = moment(new Date(req.params.date)).format('M');
   var year = moment(new Date(req.params.date)).format('YYYY');
