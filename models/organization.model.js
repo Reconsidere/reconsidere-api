@@ -75,19 +75,42 @@ var model = {
       active: Boolean
     }
   ],
-  processingChain: [
-    {
+  expenses: {
+    date: Date, 
+    fixed: [{
       name: String,
+      type: String,
       description: String,
-      fixedCost: [{
-        name: String,
-        date: [Date],
-        price: [Number],
-        active: Boolean
-      }],
-      hierarchy: [{}]
-    }
-  ],
+      date: Date,
+      cost: Number,
+      active: Boolean
+    }],
+    inconstant: [{
+      name: String,
+      type: String,
+      description: String,
+      date: Date,
+      quantity: Number,
+      cost: Number,
+      amount: Number
+    }],
+    uncertain: [{
+      name: String,
+      type: String,
+      description: String,
+      date: Date,
+      quantity: Number,
+      cost: Number,
+      amount: Number
+    }]
+  },
+  processingChain: [{
+    name: String,
+    description: String,
+    date: Date,
+    active: Boolean,
+    hierarchy: [{}],
+  }],
   hierarchy: {
     solid: {
       materials: {
@@ -214,6 +237,7 @@ var model = {
       name: String,
       archived: Boolean,
       status: String,
+      distance: Number,
       schedules: [
         {
           date: Date,

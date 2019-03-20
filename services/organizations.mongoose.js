@@ -1,4 +1,6 @@
 mongoose = require('mongoose');
+moment = require('moment');
+
 
 var OrganizationSchema = new mongoose.Schema({
   company: String,
@@ -78,7 +80,7 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ],
   expenses: {
-    date: Date, 
+    date: Date,
     fixed: [{
       name: String,
       type: String,
@@ -681,77 +683,43 @@ organizations.route('/update/processingchain/:id').put(function (req, res, next)
 });
 
 
-organizations.route('/collectioncost/:id').get(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (err) {
-      return next(new Error(res.status(400).send('ERE008')));
-    } else {
-      res.json(org.processingChain);
-    }
-  });
-});
-
-organizations.route('/update/collectioncost/:id').put(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error(res.status(400).send('ERE005')));
-    else {
-      org.processingChain = req.body;
-      org
-        .update(org)
-        .then(org => {
-          res.json('SRE001');
-        })
-        .catch(err => {
-          return next(new Error(res.status(400).send('ERE006')));
-        });
-    }
-  });
-});
-
-
 organizations.route('/fixedcost/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
       return next(new Error(res.status(400).send('ERE008')));
     } else {
-      res.json(org.processingChain);
+      res.json(org.expenses);
     }
   });
 });
 
-organizations.route('/update/fixedcost/:id').put(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error(res.status(400).send('ERE005')));
-    else {
-      org.processingChain = req.body;
-      org
-        .update(org)
-        .then(org => {
-          res.json('SRE001');
-        })
-        .catch(err => {
-          return next(new Error(res.status(400).send('ERE006')));
-        });
-    }
-  });
-});
+organizations.route('/expanses/:id/:date').get(function (req, res, next) {
+  var month = moment(new Date(req.params.date)).format('M');
+  var year = moment(new Date(req.params.date)).format('YYYY');
+  organizationModel.aggregate([
+    { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
+    { $project: { "date": { "$month": "$expenses.date" }, "year": { "$year": "$expenses.date" }, document: "$$ROOT" } }, { "$match": { "date": Number(month), "year": Number(year) } },
 
-
-organizations.route('/expanses/:id').get(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
+  ]).exec(function (err, org) {
     if (err) {
       return next(new Error(res.status(400).send('ERE008')));
-    } else {
-      res.json(org.processingChain);
+    }
+    else {
+      if (org[0] !== undefined && org[0].document !== undefined) {
+        res.json(org[0].document.expenses);
+      } else {
+        res.json(org[0]);
+      }
     }
   });
+
 });
 
 organizations.route('/update/expanses/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
-      org.processingChain = req.body;
+      org.expenses = req.body;
       org
         .update(org)
         .then(org => {
