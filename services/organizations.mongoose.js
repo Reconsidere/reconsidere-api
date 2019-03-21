@@ -687,22 +687,23 @@ organizations.route('/expenses/:id/:date').get(function (req, res, next) {
   var month = moment(new Date(req.params.date)).format('M');
   var year = moment(new Date(req.params.date)).format('YYYY');
   organizationModel.aggregate([
+    { $unwind: "$expenses" },
     { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
-    { $project: { "date": { "$month": "$expenses.date" }, "year": { "$year": "$expenses.date" }, document: "$$ROOT" } }, { "$match": { "date": Number(month), "year": Number(year) } },
+    { $project: { "date": { "$month": "$expenses.date" }, "year": { "$year": "$expenses.date" }, document: "$expenses" } }, { "$match": { "date": Number(month), "year": Number(year) } },
 
   ]).exec(function (err, org) {
     if (err) {
+      console.log(err);
       return next(new Error(res.status(400).send('ERE008')));
     }
     else {
       if (org[0] !== undefined && org[0].document !== undefined) {
-        res.json(org[0].document.expenses);
+        res.json(org[0].document);
       } else {
         res.json(org[0]);
       }
     }
   });
-
 });
 
 organizations.route('/update/expenses/:id').put(function (req, res, next) {
@@ -717,6 +718,33 @@ organizations.route('/update/expenses/:id').put(function (req, res, next) {
         })
         .catch(err => {
           console.log(err);
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+organizations.route('/add/expenses/:id').post(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      let obj = {
+        date: req.body[0].date,
+        fixed: req.body[0].fixed,
+        uncertain: req.body[0].uncertain,
+        inconstant: req.body[0].inconstant,
+      }
+      if (org.expenses === undefined || org.expenses.length <= 0) {
+        org.expenses = obj;
+      } else {
+        org.expenses.push(obj)
+      }
+      org
+        .save()
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
           return next(new Error(res.status(400).send('ERE006')));
         });
     }
