@@ -82,11 +82,11 @@ var model = {
     active: Boolean,
     hierarchy: [{}],
   }],
-  expenses: {
+  expenses: [{
     date: Date,
     fixed: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       cost: Number,
@@ -94,23 +94,24 @@ var model = {
     }],
     inconstant: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       quantity: Number,
+      weight: Number,
       cost: Number,
       amount: Number
     }],
     uncertain: [{
       name: String,
-      type: String,
+      typeExpense: String,
       description: String,
       date: Date,
       quantity: Number,
       cost: Number,
       amount: Number
     }]
-  },
+  }],
   hierarchy: {
     solid: {
       materials: {

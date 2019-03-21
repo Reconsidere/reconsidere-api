@@ -102,6 +102,7 @@ var OrganizationSchema = new mongoose.Schema({
       description: String,
       date: Date,
       quantity: Number,
+      weight: Number,
       cost: Number,
       amount: Number
     }],
