@@ -79,6 +79,10 @@ var OrganizationSchema = new mongoose.Schema({
       active: Boolean
     }
   ],
+  incomingOut:[{
+     date: Date,
+     type:String,
+  }],
   processingChain: [{
     name: String,
     description: String,
