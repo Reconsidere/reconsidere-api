@@ -767,5 +767,16 @@ organizations.route('/add/expenses/:id').post(function (req, res, next) {
   });
 });
 
+
+organizations.route('/entries/:id').get(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(org.entries);
+    }
+  });
+});
+
 app.use('/organization', organizations);
 module.exports = app;
