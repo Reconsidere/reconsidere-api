@@ -80,18 +80,18 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ],
   entries: {
-    purchase:{
+    purchase:[{
       date: Date,
       name: String,
       cost: Number,
       data: Date
-    },
-    sale:{
+    }],
+    sale:[{
       date: Date,
       name: String,
       cost: Number,
       data: Date
-    }
+    }]
 
   },
   processingChain: [{
