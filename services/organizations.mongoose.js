@@ -79,10 +79,21 @@ var OrganizationSchema = new mongoose.Schema({
       active: Boolean
     }
   ],
-  incomingOut:[{
-     date: Date,
-     type:String,
-  }],
+  entries: {
+    purchase:{
+      date: Date,
+      name: String,
+      cost: Number,
+      data: Date
+    },
+    sale:{
+      date: Date,
+      name: String,
+      cost: Number,
+      data: Date
+    }
+
+  },
   processingChain: [{
     name: String,
     description: String,
@@ -279,7 +290,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
-const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@ec2-18-216-31-156.us-east-2.compute.amazonaws.com:27017/reconsideredb'
+const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@devops.reconsidere.online:27017/reconsideredb'
 const options = {
   autoIndex: false,
   reconnectTries: 30,
