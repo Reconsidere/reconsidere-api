@@ -84,13 +84,13 @@ var OrganizationSchema = new mongoose.Schema({
       date: Date,
       name: String,
       cost: Number,
-      data: Date
+      typeEntrie: String
     }],
     sale:[{
       date: Date,
       name: String,
       cost: Number,
-      data: Date
+      typeEntrie: String
     }]
 
   },
@@ -774,6 +774,24 @@ organizations.route('/entries/:id').get(function (req, res, next) {
       return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.entries);
+    }
+  });
+});
+
+organizations.route('/update/entries/:id').put(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      org.entries = req.body;
+      org
+        .update(org)
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
+          console.log(err);
+          return next(new Error(res.status(400).send('ERE006')));
+        });
     }
   });
 });
