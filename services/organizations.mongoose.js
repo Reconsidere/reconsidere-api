@@ -84,13 +84,19 @@ var OrganizationSchema = new mongoose.Schema({
       date: Date,
       name: String,
       cost: Number,
-      typeEntrie: String
+      typeEntrie: String,
+      quantity: Number,
+      weight: Number,
+      amount: Number
     }],
     sale:[{
       date: Date,
       name: String,
       cost: Number,
-      typeEntrie: String
+      typeEntrie: String,
+      quantity: Number,
+      weight: Number,
+      amount: Number
     }]
 
   },
@@ -113,22 +119,20 @@ var OrganizationSchema = new mongoose.Schema({
     }],
     inconstant: [{
       name: String,
-      typeExpense: String,
       description: String,
       date: Date,
-      quantity: Number,
-      weight: Number,
       cost: Number,
-      amount: Number
+      active: Boolean
+
+     
     }],
     uncertain: [{
       name: String,
-      typeExpense: String,
       description: String,
       date: Date,
-      quantity: Number,
       cost: Number,
-      amount: Number
+      active: Boolean
+
     }]
   }],
   hierarchy: {
@@ -726,7 +730,17 @@ organizations.route('/update/expenses/:id').put(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
-      org.expenses = req.body;
+      let obj = {
+        date: req.body[0].date,
+        fixed: req.body[0].fixed,
+        uncertain: req.body[0].uncertain,
+        inconstant: req.body[0].inconstant,
+      }
+      if (org.expenses === undefined || org.expenses.length <= 0) {
+        org.expenses = obj;
+      } else {
+        org.expenses.push(obj)
+      }
       org
         .update(org)
         .then(org => {
