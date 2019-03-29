@@ -80,7 +80,7 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ],
   entries: {
-    purchase:[{
+    purchase: [{
       date: Date,
       name: String,
       cost: Number,
@@ -89,7 +89,7 @@ var OrganizationSchema = new mongoose.Schema({
       weight: Number,
       amount: Number
     }],
-    sale:[{
+    sale: [{
       date: Date,
       name: String,
       cost: Number,
@@ -124,7 +124,7 @@ var OrganizationSchema = new mongoose.Schema({
       cost: Number,
       active: Boolean
 
-     
+
     }],
     uncertain: [{
       name: String,
@@ -726,7 +726,7 @@ organizations.route('/expenses/:id/:date').get(function (req, res, next) {
   });
 });
 
-organizations.route('/update/expenses/:id').put(function (req, res, next) {
+organizations.route('/add/expenses/:id/:idexpense').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
@@ -739,35 +739,16 @@ organizations.route('/update/expenses/:id').put(function (req, res, next) {
       if (org.expenses === undefined || org.expenses.length <= 0) {
         org.expenses = obj;
       } else {
-        org.expenses.push(obj)
-      }
-      org
-        .update(org)
-        .then(org => {
-          res.json('SRE001');
-        })
-        .catch(err => {
-          console.log(err);
-          return next(new Error(res.status(400).send('ERE006')));
+        let isAdd = false;
+        org.expenses.forEach((item, index) => {
+          if (item._id.toString() === req.params.idexpense.toString() && isAdd === false) {
+            org.expenses[index] = obj;
+            isAdd = true;
+          }
         });
-    }
-  });
-});
-
-organizations.route('/add/expenses/:id').post(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error(res.status(400).send('ERE005')));
-    else {
-      let obj = {
-        date: req.body[0].date,
-        fixed: req.body[0].fixed,
-        uncertain: req.body[0].uncertain,
-        inconstant: req.body[0].inconstant,
-      }
-      if (org.expenses === undefined || org.expenses.length <= 0) {
-        org.expenses = obj;
-      } else {
-        org.expenses.push(obj)
+        if (isAdd === false) {
+          org.expenses.push(obj)
+        }
       }
       org
         .save()
