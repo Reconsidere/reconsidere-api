@@ -80,7 +80,7 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ],
   entries: {
-    purchase: [{
+    purchase:[{
       date: Date,
       name: String,
       cost: Number,
@@ -89,7 +89,7 @@ var OrganizationSchema = new mongoose.Schema({
       weight: Number,
       amount: Number
     }],
-    sale: [{
+    sale:[{
       date: Date,
       name: String,
       cost: Number,
@@ -124,7 +124,7 @@ var OrganizationSchema = new mongoose.Schema({
       cost: Number,
       active: Boolean
 
-
+     
     }],
     uncertain: [{
       name: String,
@@ -150,7 +150,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -167,7 +166,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -184,7 +182,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -201,7 +198,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -218,7 +214,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -235,7 +230,6 @@ var OrganizationSchema = new mongoose.Schema({
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
 
               }
             }
@@ -648,7 +642,7 @@ organizations.route('/add/hierarchy/:id').post(function (req, res, next) {
   });
 });
 
-organizations.route('/pricing/:id').get(function (req, res, next) {
+organizations.route('/materialsummary/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
       return next(new Error(res.status(400).send('ERE008')));
@@ -658,22 +652,7 @@ organizations.route('/pricing/:id').get(function (req, res, next) {
   });
 });
 
-organizations.route('/add/pricing/:id').post(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
-    if (!org) return next(new Error(res.status(400).send('ERE005')));
-    else {
-      org.hierarchy = req.body;
-      org
-        .update(org)
-        .then(org => {
-          res.json('SRE001');
-        })
-        .catch(err => {
-          return next(new Error(res.status(400).send('ERE006')));
-        });
-    }
-  });
-});
+
 
 organizations.route('/processingchain/:id').get(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
@@ -726,7 +705,25 @@ organizations.route('/expenses/:id/:date').get(function (req, res, next) {
   });
 });
 
-organizations.route('/add/expenses/:id/:idexpense').post(function (req, res, next) {
+organizations.route('/update/expenses/:id').put(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      org.expenses = req.body;
+      org
+        .update(org)
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
+          console.log(err);
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+organizations.route('/add/expenses/:id').post(function (req, res, next) {
   organizationModel.findById(req.params.id, function (err, org) {
     if (!org) return next(new Error(res.status(400).send('ERE005')));
     else {
@@ -739,16 +736,7 @@ organizations.route('/add/expenses/:id/:idexpense').post(function (req, res, nex
       if (org.expenses === undefined || org.expenses.length <= 0) {
         org.expenses = obj;
       } else {
-        let isAdd = false;
-        org.expenses.forEach((item, index) => {
-          if (item._id.toString() === req.params.idexpense.toString() && isAdd === false) {
-            org.expenses[index] = obj;
-            isAdd = true;
-          }
-        });
-        if (isAdd === false) {
-          org.expenses.push(obj)
-        }
+        org.expenses.push(obj)
       }
       org
         .save()
