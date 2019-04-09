@@ -80,7 +80,7 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ],
   entries: {
-    purchase:[{
+    purchase: [{
       date: Date,
       name: String,
       cost: Number,
@@ -89,7 +89,7 @@ var OrganizationSchema = new mongoose.Schema({
       weight: Number,
       amount: Number
     }],
-    sale:[{
+    sale: [{
       date: Date,
       name: String,
       cost: Number,
@@ -124,7 +124,7 @@ var OrganizationSchema = new mongoose.Schema({
       cost: Number,
       active: Boolean
 
-     
+
     }],
     uncertain: [{
       name: String,
@@ -757,6 +757,53 @@ organizations.route('/entries/:id').get(function (req, res, next) {
       return next(new Error(res.status(400).send('ERE008')));
     } else {
       res.json(org.entries);
+    }
+  });
+});
+
+organizations.route('/entries/filter/:id').post(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+
+
+      var dateInitial = new Date(req.body.dateInitial);
+      var dateFinal = new Date(req.body.dateFinal);
+      organizationModel.find(
+        {
+          '_id': req.params.id,
+          $or: [{
+            "entries.purchase.date": { "$gte": dateInitial, "$lte": dateFinal },
+            "entries.sale.date": { "$gte": dateInitial, "$lte": dateFinal }
+          }]
+        },
+        function (err, org) {
+          if (err) {
+            return next(new Error(res.status(400).send('ERE008')));
+          } else {
+            //res.json(org.entries);
+            console.log(org.entries.purchase);
+          }
+        });
+
+
+
+
+      // organizationModel.aggregate([
+      //   { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
+      //   { $match: { 'entries.purchase': { $: { "$gte": dateInitial, "$lte": dateFinal } } } }
+
+      // ]).exec(function (err, org) {
+      //   if (err) {
+      //     console.log(err);
+      //     return next(new Error(res.status(400).send('ERE008')));
+      //   }
+      //   console.log(org);
+      //   console.log(org[0]);
+      // });
+
+      //res.json(org.entries);
     }
   });
 });

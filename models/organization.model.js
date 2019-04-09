@@ -75,6 +75,27 @@ var model = {
       active: Boolean
     }
   ],
+  entries: {
+    purchase:[{
+      date: Date,
+      name: String,
+      cost: Number,
+      typeEntrie: String,
+      quantity: Number,
+      weight: Number,
+      amount: Number
+    }],
+    sale:[{
+      date: Date,
+      name: String,
+      cost: Number,
+      typeEntrie: String,
+      quantity: Number,
+      weight: Number,
+      amount: Number
+    }]
+
+  },
   processingChain: [{
     name: String,
     description: String,
@@ -94,22 +115,20 @@ var model = {
     }],
     inconstant: [{
       name: String,
-      typeExpense: String,
       description: String,
       date: Date,
-      quantity: Number,
-      weight: Number,
       cost: Number,
-      amount: Number
+      active: Boolean
+
+     
     }],
     uncertain: [{
       name: String,
-      typeExpense: String,
       description: String,
       date: Date,
-      quantity: Number,
       cost: Number,
-      amount: Number
+      active: Boolean
+
     }]
   }],
   hierarchy: {
@@ -127,7 +146,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -144,7 +162,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -161,7 +178,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -178,7 +194,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -195,7 +210,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
               }
             }
           ]
@@ -212,7 +226,6 @@ var model = {
                 date: [Date],
                 weight: Number,
                 price: Number,
-                dateEntry: Date
 
               }
             }
