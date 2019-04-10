@@ -775,35 +775,20 @@ organizations.route('/entries/filter/:id').post(function (req, res, next) {
           '_id': req.params.id,
           $or: [{
             "entries.purchase.date": { "$gte": dateInitial, "$lte": dateFinal },
-            "entries.sale.date": { "$gte": dateInitial, "$lte": dateFinal }
+            //"entries.sale.date": { "$gte": dateInitial, "$lte": dateFinal }
           }]
         },
         function (err, org) {
           if (err) {
             return next(new Error(res.status(400).send('ERE008')));
           } else {
-            //res.json(org.entries);
-            console.log(org.entries.purchase);
+            if (org[0] === undefined || org[0].expenses === undefined) {
+              res.json(undefined);
+              return;
+            }
+            res.json(org[0].expenses);
           }
         });
-
-
-
-
-      // organizationModel.aggregate([
-      //   { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
-      //   { $match: { 'entries.purchase': { $: { "$gte": dateInitial, "$lte": dateFinal } } } }
-
-      // ]).exec(function (err, org) {
-      //   if (err) {
-      //     console.log(err);
-      //     return next(new Error(res.status(400).send('ERE008')));
-      //   }
-      //   console.log(org);
-      //   console.log(org[0]);
-      // });
-
-      //res.json(org.entries);
     }
   });
 });
