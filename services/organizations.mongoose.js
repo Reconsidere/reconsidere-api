@@ -762,33 +762,49 @@ organizations.route('/entries/:id').get(function (req, res, next) {
 });
 
 organizations.route('/entries/filter/:id').post(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, org) {
+  organizationModel.findById(req.params.id, function (err, orgResult) {
     if (err) {
       return next(new Error(res.status(400).send('ERE008')));
     } else {
 
-
       var dateInitial = new Date(req.body.dateInitial);
       var dateFinal = new Date(req.body.dateFinal);
-      organizationModel.find(
-        {
-          '_id': req.params.id,
-          $or: [{
-            "entries.purchase.date": { "$gte": dateInitial, "$lte": dateFinal },
-            //"entries.sale.date": { "$gte": dateInitial, "$lte": dateFinal }
-          }]
-        },
-        function (err, org) {
+      var purchaseResult = { sale: [], purchase: [] };
+      try {
+        organizationModel.aggregate([
+          { $unwind: "$entries.purchase" },
+          { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
+          { $match: { 'entries.purchase.date': { "$gte": dateInitial, "$lte": dateFinal } } }
+        ]).exec(function (err, org) {
           if (err) {
-            return next(new Error(res.status(400).send('ERE008')));
-          } else {
-            if (org[0] === undefined || org[0].expenses === undefined) {
-              res.json(undefined);
-              return;
-            }
-            res.json(org[0].expenses);
+            console.log(err);
           }
+          else {
+            if (org[0] !== undefined && org[0].entries !== undefined && org[0].entries.purchase !== undefined) {
+              purchaseResult.purchase.push(org[0].entries.purchase);
+            }
+          }
+          organizationModel.aggregate([
+            { $unwind: "$entries.sale" },
+            { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
+            { $match: { 'entries.sale.date': { "$gte": dateInitial, "$lte": dateFinal } } }
+          ]).exec(function (err, org) {
+            if (err) {
+              console.log(err);
+            }
+            else {
+              if (org[0] !== undefined && org[0].entries !== undefined && org[0].entries.sale !== undefined) {
+                purchaseResult.sale.push(org[0].entries.sale);
+              }
+              console.log(purchaseResult);
+              res.json(purchaseResult);
+            }
+          });
         });
+
+      } catch (error) {
+        return next(new Error(res.status(400).send('ERE008')));
+      }
     }
   });
 });
