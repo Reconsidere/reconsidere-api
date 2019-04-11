@@ -762,49 +762,31 @@ organizations.route('/entries/:id').get(function (req, res, next) {
 });
 
 organizations.route('/entries/filter/:id').post(function (req, res, next) {
-  organizationModel.findById(req.params.id, function (err, orgResult) {
+  organizationModel.findById(req.params.id, function (err, org) {
     if (err) {
       return next(new Error(res.status(400).send('ERE008')));
     } else {
+      var dateInitial = new Date(req.body.dateInitial).toDateString();
+      var dateFinal = new Date(req.body.dateFinal).toDateString();
+      var entriesResult = { sale: [], purchase: [] };
 
-      var dateInitial = new Date(req.body.dateInitial);
-      var dateFinal = new Date(req.body.dateFinal);
-      var purchaseResult = { sale: [], purchase: [] };
-      try {
-        organizationModel.aggregate([
-          { $unwind: "$entries.purchase" },
-          { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
-          { $match: { 'entries.purchase.date': { "$gte": dateInitial, "$lte": dateFinal } } }
-        ]).exec(function (err, org) {
-          if (err) {
-            console.log(err);
+      if (org.entries !== undefined && org.entries.purchase !== undefined && org.entries.purchase.length > 0) {
+        org.entries.purchase.forEach(element => {
+          var date = new Date(element.date).toDateString();
+          if (date >= dateInitial && date <= dateFinal) {
+            entriesResult.purchase.push(element);
           }
-          else {
-            if (org[0] !== undefined && org[0].entries !== undefined && org[0].entries.purchase !== undefined) {
-              purchaseResult.purchase.push(org[0].entries.purchase);
-            }
-          }
-          organizationModel.aggregate([
-            { $unwind: "$entries.sale" },
-            { $match: { '_id': mongoose.Types.ObjectId(req.params.id) } },
-            { $match: { 'entries.sale.date': { "$gte": dateInitial, "$lte": dateFinal } } }
-          ]).exec(function (err, org) {
-            if (err) {
-              console.log(err);
-            }
-            else {
-              if (org[0] !== undefined && org[0].entries !== undefined && org[0].entries.sale !== undefined) {
-                purchaseResult.sale.push(org[0].entries.sale);
-              }
-              console.log(purchaseResult);
-              res.json(purchaseResult);
-            }
-          });
         });
-
-      } catch (error) {
-        return next(new Error(res.status(400).send('ERE008')));
       }
+      if (org.entries !== undefined && org.entries.sale !== undefined && org.entries.sale.length > 0) {
+        org.entries.sale.forEach(element => {
+          var date = new Date(element.date).toDateString();
+          if (date >= dateInitial && date <= dateFinal) {
+            entriesResult.sale.push(element);
+          }
+        });
+      }
+      res.json(entriesResult);
     }
   });
 });
