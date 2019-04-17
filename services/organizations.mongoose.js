@@ -1,5 +1,6 @@
 mongoose = require('mongoose');
 moment = require('moment');
+customerSchema = require('../models/customer.model');
 
 
 var OrganizationSchema = new mongoose.Schema({
@@ -277,12 +278,14 @@ var OrganizationSchema = new mongoose.Schema({
   ]
 });
 var organizationModel = mongoose.model('Organization', OrganizationSchema);
+var customerModel = mongoose.model('Customer', customerSchema);
 
 const express = require('express');
 (path = require('path')),
   (bodyParser = require('body-parser')),
   (cors = require('cors'));
 var organizations = express.Router();
+var customers = express.Router();
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -809,5 +812,27 @@ organizations.route('/update/entries/:id').put(function (req, res, next) {
   });
 });
 
+
+
+
+customers.route('/user/authenticate').post(function (req, res, next) {
+  customerModel.findOne(
+    { 'email': req.body.email },
+    { '$': 1 },
+    function (err, customer) {
+      if (!customer) {
+        console.log();
+        return next(new Error(res.status(400).send('ERE001')));
+      }
+      else {
+        console.log('chegou aqui');
+        console.log(customer);
+        //res.json(org.users[0]);
+      }
+    }
+  );
+});
+
 app.use('/organization', organizations);
+app.use('/customer', customers);
 module.exports = app;
