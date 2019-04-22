@@ -1,6 +1,7 @@
 model = [{
     name: String,
     email: String,
+    cpf: String,
     password: String,
     birthday: Date,
     creationDate: Date,
