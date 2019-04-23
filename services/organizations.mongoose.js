@@ -813,7 +813,63 @@ organizations.route('/update/entries/:id').put(function (req, res, next) {
 });
 
 
+customers.route('/add').post(function (req, res, next) {
+  console.log('chegou aqui');
+  customerModel.findOne(
+    { 'email': req.body.email },
+    function (err, obj) {
+      if (obj) {
+        return next(new Error(res.status(400).send('WRE005')));
+      } else {
+        customerModel.findById(req.params.id, function (err, customer) {
+          if (!customer) return next(new Error(res.status(400).send('ERE005')));
+          else {
+            (req.body.password = req.body.password), 10;
+            customer.push(req.body);
+            customer
+              .updateOne(customer)
+              .then(customer => {
+                res.json('SRE001');
+              })
+              .catch(err => {
+                return next(new Error(res.status(400).send('ERE006')));
+              });
+          }
+        });
+      }
+    }
+  );
+});
 
+customers.route('/customer/update/:id').post(function (req, res, next) {
+  customerModel.findById(req.params.id, function (err, customer) {
+    if (!customer) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      var user = customer.id(req.body._id);
+      if (!user) {
+        customer.push(req.body);
+        customer
+          .update(customer)
+          .then(org => {
+            res.json('SRE001');
+          })
+          .catch(err => {
+            return next(new Error(res.status(400).send('ERE006')));
+          });
+      } else {
+        user.set(req.body);
+        customer
+          .update(customer)
+          .then(customer => {
+            res.json('SRE001');
+          })
+          .catch(err => {
+            return next(new Error(res.status(400).send('ERE006')));
+          });
+      }
+    }
+  });
+});
 
 customers.route('/user/authenticate').post(function (req, res, next) {
   customerModel.findOne(
@@ -825,7 +881,6 @@ customers.route('/user/authenticate').post(function (req, res, next) {
         return next(new Error(res.status(400).send('ERE001')));
       }
       else {
-        console.log('chegou aqui');
         console.log(customer);
         //res.json(org.users[0]);
       }
