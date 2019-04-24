@@ -850,14 +850,14 @@ customers.route('/add').post(function (req, res, next) {
             cust
               .save()
               .then(item => {
-                res.json('SRE001');
+                res.json(item);
               });
           } else {
             customer.push(req.body);
             customer
               .updateOne(customer)
               .then(customer => {
-                res.json('SRE001');
+                res.json(customer);
               })
               .catch(err => {
                 return next(new Error(res.status(400).send('ERE006')));
@@ -869,32 +869,19 @@ customers.route('/add').post(function (req, res, next) {
   );
 });
 
-customers.route('/update/:id').post(function (req, res, next) {
+customers.route('/update/:id').put(function (req, res, next) {
   customerModel.findById(req.params.id, function (err, customer) {
     if (!customer) return next(new Error(res.status(400).send('ERE005')));
     else {
-      var user = customer.id(req.body._id);
-      if (!user) {
-        customer.push(req.body);
-        customer
-          .update(customer)
-          .then(org => {
-            res.json('SRE001');
-          })
-          .catch(err => {
-            return next(new Error(res.status(400).send('ERE006')));
-          });
-      } else {
-        user.set(req.body);
+        customer.set(req.body);
         customer
           .update(customer)
           .then(customer => {
-            res.json('SRE001');
+            res.json(customer);
           })
           .catch(err => {
             return next(new Error(res.status(400).send('ERE006')));
           });
-      }
     }
   });
 });
@@ -902,15 +889,13 @@ customers.route('/update/:id').post(function (req, res, next) {
 customers.route('/authenticate').post(function (req, res, next) {
   customerModel.findOne(
     { 'email': req.body.email },
-    { '$': 1 },
     function (err, customer) {
       if (!customer) {
         console.log();
         return next(new Error(res.status(400).send('ERE001')));
       }
       else {
-        console.log(customer);
-        //res.json(org.users[0]);
+        res.json(customer);
       }
     }
   );
