@@ -1,6 +1,6 @@
 mongoose = require('mongoose');
 moment = require('moment');
-customerSchema = require('../models/customer.model');
+//customerSchema = require('../models/customer.model');
 
 
 var OrganizationSchema = new mongoose.Schema({
@@ -277,8 +277,32 @@ var OrganizationSchema = new mongoose.Schema({
     }
   ]
 });
+
+var customerSchema = new mongoose.Schema(
+  [{
+    name: String,
+    email: String,
+    cpf: String,
+    password: String,
+    birthday: Date,
+    creationDate: Date,
+    sex: String,
+    location: {
+      state: String,
+      cep: String,
+      publicPlace: String,
+      neighborhood: String,
+      number: Number,
+      county: String,
+      complement: String
+    },
+    materials: [String]
+  }]);
+
+
 var organizationModel = mongoose.model('Organization', OrganizationSchema);
 var customerModel = mongoose.model('Customer', customerSchema);
+
 
 const express = require('express');
 (path = require('path')),
@@ -814,17 +838,21 @@ organizations.route('/update/entries/:id').put(function (req, res, next) {
 
 
 customers.route('/add').post(function (req, res, next) {
-  console.log('chegou aqui');
   customerModel.findOne(
     { 'email': req.body.email },
     function (err, obj) {
       if (obj) {
-        return next(new Error(res.status(400).send('WRE005')));
+        return next(new Error(res.status(400).send('WRE006')));
       } else {
         customerModel.findById(req.params.id, function (err, customer) {
-          if (!customer) return next(new Error(res.status(400).send('ERE005')));
-          else {
-            (req.body.password = req.body.password), 10;
+          if (!customer) {
+            var cust = new customerModel(req.body);
+            cust
+              .save()
+              .then(item => {
+                res.json('SRE001');
+              });
+          } else {
             customer.push(req.body);
             customer
               .updateOne(customer)
@@ -841,7 +869,7 @@ customers.route('/add').post(function (req, res, next) {
   );
 });
 
-customers.route('/customer/update/:id').post(function (req, res, next) {
+customers.route('/update/:id').post(function (req, res, next) {
   customerModel.findById(req.params.id, function (err, customer) {
     if (!customer) return next(new Error(res.status(400).send('ERE005')));
     else {
@@ -871,7 +899,7 @@ customers.route('/customer/update/:id').post(function (req, res, next) {
   });
 });
 
-customers.route('/user/authenticate').post(function (req, res, next) {
+customers.route('/authenticate').post(function (req, res, next) {
   customerModel.findOne(
     { 'email': req.body.email },
     { '$': 1 },
