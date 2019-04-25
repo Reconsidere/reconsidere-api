@@ -286,6 +286,10 @@ var customerSchema = new mongoose.Schema(
     password: String,
     birthday: Date,
     creationDate: Date,
+    payment:{
+      checkingAccount:Number,
+      agency: Number,
+    },
     sex: String,
     location: {
       state: String,
