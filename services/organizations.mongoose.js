@@ -286,8 +286,8 @@ var customerSchema = new mongoose.Schema(
     password: String,
     birthday: Date,
     creationDate: Date,
-    payment:{
-      checkingAccount:Number,
+    payment: {
+      checkingAccount: Number,
       agency: Number,
     },
     sex: String,
@@ -300,7 +300,25 @@ var customerSchema = new mongoose.Schema(
       county: String,
       complement: String
     },
-    materials: [String]
+    materials: [String],
+    scheduling: [{
+      date: Date,
+      hour: Date,
+      location: {
+        state: String,
+        cep: String,
+        publicPlace: String,
+        neighborhood: String,
+        number: Number,
+        county: String,
+        complement: String
+      },
+      weight: Number,
+      description: String,
+      quantity: Number,
+      picture: String
+    }]
+
   }]);
 
 
@@ -877,15 +895,33 @@ customers.route('/update/:id').put(function (req, res, next) {
   customerModel.findById(req.params.id, function (err, customer) {
     if (!customer) return next(new Error(res.status(400).send('ERE005')));
     else {
-        customer.set(req.body);
-        customer
-          .update(customer)
-          .then(customer => {
-            res.json(customer);
-          })
-          .catch(err => {
-            return next(new Error(res.status(400).send('ERE006')));
-          });
+      customer.set(req.body);
+      customer
+        .update(customer)
+        .then(customer => {
+          res.json(customer);
+        })
+        .catch(err => {
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+
+customers.route('/scheduling/add/:id').put(function (req, res, next) {
+  customerModel.findById(req.params.id, function (err, customer) {
+    if (!customer) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      customer.scheduling = req.body;
+      customer
+        .update(customer)
+        .then(customer => {
+          res.json(customer.scheduling);
+        })
+        .catch(err => {
+          return next(new Error(res.status(400).send('ERE006')));
+        });
     }
   });
 });
