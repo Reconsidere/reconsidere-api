@@ -909,7 +909,7 @@ customers.route('/update/:id').put(function (req, res, next) {
 });
 
 
-customers.route('/scheduling/add/:id').put(function (req, res, next) {
+customers.route('/scheduling/add/:id').post(function (req, res, next) {
   customerModel.findById(req.params.id, function (err, customer) {
     if (!customer) return next(new Error(res.status(400).send('ERE005')));
     else {
@@ -922,6 +922,16 @@ customers.route('/scheduling/add/:id').put(function (req, res, next) {
         .catch(err => {
           return next(new Error(res.status(400).send('ERE006')));
         });
+    }
+  });
+});
+
+customers.route('/scheduling/all/:id').get(function (req, res, next) {
+  customerModel.findById(req.params.id, function (err, customer) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(customer.scheduling);
     }
   });
 });
