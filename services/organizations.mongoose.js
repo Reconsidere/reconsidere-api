@@ -891,6 +891,50 @@ customers.route('/add').post(function (req, res, next) {
   );
 });
 
+
+customers.route('/addFb').post(function (req, res, next) {
+  customerModel.findOne({
+    $and: [
+      { 'email': req.body.email }, { 'password': req.body.password }]
+  },
+    function (err, customer) {
+      if (customer) {
+        res.json(customer);
+        return;
+      }
+      else if (!customer) {
+        customerModel.findOne(
+          { 'email': req.body.email },
+          function (err, obj) {
+            if (obj) {
+              return next(new Error(res.status(400).send('WRE006')));
+            }
+          });
+      }
+      customerModel.findById(req.params.id, function (err, customer) {
+        if (!customer) {
+          var cust = new customerModel(req.body);
+          cust
+            .save()
+            .then(item => {
+              res.json(item);
+            });
+        } else {
+          customer.push(req.body);
+          customer
+            .updateOne(customer)
+            .then(customer => {
+              res.json(customer);
+            })
+            .catch(err => {
+              return next(new Error(res.status(400).send('ERE006')));
+            });
+        }
+      });
+    }
+  );
+});
+
 customers.route('/update/:id').put(function (req, res, next) {
   customerModel.findById(req.params.id, function (err, customer) {
     if (!customer) return next(new Error(res.status(400).send('ERE005')));
@@ -941,7 +985,6 @@ customers.route('/authenticate').post(function (req, res, next) {
     { 'email': req.body.email },
     function (err, customer) {
       if (!customer) {
-        console.log();
         return next(new Error(res.status(400).send('ERE001')));
       }
       else {
