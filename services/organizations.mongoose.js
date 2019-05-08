@@ -337,7 +337,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
-const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@devops.reconsidere.online:27017/reconsideredb'
+//const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@devops.reconsidere.online:27017/reconsideredb'
+const TestURL = 'mongodb://localhost:27017/reconsideredb'
 const options = {
   autoIndex: false,
   reconnectTries: 30,
@@ -893,6 +894,50 @@ customers.route('/add').post(function (req, res, next) {
 
 
 customers.route('/addFb').post(function (req, res, next) {
+  customerModel.findOne({
+    $and: [
+      { 'email': req.body.email }, { 'password': req.body.password }]
+  },
+    function (err, customer) {
+      if (customer) {
+        res.json(customer);
+        return;
+      }
+      else if (!customer) {
+        customerModel.findOne(
+          { 'email': req.body.email },
+          function (err, obj) {
+            if (obj) {
+              return next(new Error(res.status(400).send('WRE006')));
+            }
+          });
+      }
+      customerModel.findById(req.params.id, function (err, customer) {
+        if (!customer) {
+          var cust = new customerModel(req.body);
+          cust
+            .save()
+            .then(item => {
+              res.json(item);
+            });
+        } else {
+          customer.push(req.body);
+          customer
+            .updateOne(customer)
+            .then(customer => {
+              res.json(customer);
+            })
+            .catch(err => {
+              return next(new Error(res.status(400).send('ERE006')));
+            });
+        }
+      });
+    }
+  );
+});
+
+customers.route('/addGp').post(function (req, res, next) {
+  console.log('caiu');
   customerModel.findOne({
     $and: [
       { 'email': req.body.email }, { 'password': req.body.password }]
