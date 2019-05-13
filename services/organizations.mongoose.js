@@ -316,7 +316,13 @@ var customerSchema = new mongoose.Schema(
       weight: Number,
       description: String,
       quantity: Number,
-      picture: String
+      picture: String,
+      status: {
+        open: Boolean,
+        scheduled: Boolean,
+        forCollection: Boolean,
+        finalized: Boolean,
+      }
     }]
 
   }]);
