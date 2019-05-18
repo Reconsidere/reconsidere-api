@@ -251,6 +251,14 @@ var OrganizationSchema = new mongoose.Schema({
       typeFuel: String
     }
   ],
+  schedulingNeighborhood: [{
+    cep: String,
+    neighborhood: String,
+    itinerary: [{
+      dayWeek: String,
+      hour: Date,
+    }]
+  }],
   georoutes: [
     {
       name: String,
@@ -323,8 +331,7 @@ var customerSchema = new mongoose.Schema(
         forCollection: Boolean,
         finalized: Boolean,
       }
-    }]
-
+    }],
   }]);
 
 
@@ -344,7 +351,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 //const TestURL = 'mongodb://reconsidere-enterprise:by4yY5A4@devops.reconsidere.online:27017/reconsideredb'
-const TestURL = 'mongodb://localhost:27017/reconsideredb'
+const TestURL = 'mongodb://localhost:27017/eowyn-reconsidere-enterprise';
 const options = {
   autoIndex: false,
   reconnectTries: 30,
@@ -854,6 +861,46 @@ organizations.route('/update/entries/:id').put(function (req, res, next) {
       org.entries = req.body;
       org
         .update(org)
+        .then(org => {
+          res.json('SRE001');
+        })
+        .catch(err => {
+          console.log(err);
+          return next(new Error(res.status(400).send('ERE006')));
+        });
+    }
+  });
+});
+
+
+
+organizations.route('/neighborhoodscheduling/all/:id').get(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(org.schedulingNeighborhood);
+    }
+  });
+});
+
+organizations.route('/neighborhoodscheduling/app/all').get(function (req, res, next) {
+  organizationModel.find({}, function (err, org) {
+    if (err) {
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      res.json(org.schedulingNeighborhood);
+    }
+  });
+});
+
+organizations.route('/neighborhoodscheduling/add/:id').post(function (req, res, next) {
+  organizationModel.findById(req.params.id, function (err, org) {
+    if (!org) return next(new Error(res.status(400).send('ERE005')));
+    else {
+      org.schedulingNeighborhood = req.body;
+      org
+        .save(org)
         .then(org => {
           res.json('SRE001');
         })
