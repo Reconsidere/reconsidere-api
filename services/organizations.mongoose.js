@@ -887,9 +887,35 @@ organizations.route('/neighborhoodscheduling/all/:id').get(function (req, res, n
 organizations.route('/neighborhoodscheduling/app/all').get(function (req, res, next) {
   organizationModel.find({}, function (err, org) {
     if (err) {
+      console.log(err);
       return next(new Error(res.status(400).send('ERE008')));
     } else {
-      res.json(org.schedulingNeighborhood);
+      var result = [];
+      org.forEach(function (items) {
+        items.schedulingNeighborhood.forEach(function (item) {
+          result.push(item);
+        });
+      });
+      res.json(result);
+    }
+  });
+});
+
+organizations.route('/neighborhoodscheduling/app/:neighborhood').get(function (req, res, next) {
+  organizationModel.find({}, function (err, org) {
+    if (err) {
+      console.log(err);
+      return next(new Error(res.status(400).send('ERE008')));
+    } else {
+      var result = [];
+      org.forEach(function (items) {
+        items.schedulingNeighborhood.forEach(function (item) {
+          if (req.params.neighborhood === item.neighborhood) {
+            result.push(item);
+          }
+        });
+      });
+      res.json(result);
     }
   });
 });
@@ -990,7 +1016,6 @@ customers.route('/addFb').post(function (req, res, next) {
 });
 
 customers.route('/addGp').post(function (req, res, next) {
-  console.log('caiu');
   customerModel.findOne({
     $and: [
       { 'email': req.body.email }, { 'password': req.body.password }]
@@ -1034,21 +1059,13 @@ customers.route('/addGp').post(function (req, res, next) {
 });
 
 customers.route('/update/:id').put(function (req, res, next) {
-  customerModel.findById(req.params.id, function (err, customer) {
-    if (!customer) return next(new Error(res.status(400).send('ERE005')));
-    else {
-      customer.set(req.body);
-      customer
-        .update(customer)
-        .then(customer => {
-          res.json(customer);
-        })
-        .catch(err => {
-          return next(new Error(res.status(400).send('ERE006')));
-        });
-    }
-  });
+  customerModel.findByIdAndUpdate(req.params.id, req.body, { new: true },
+    (err, todo) => {
+      if (err) return next(new Error(res.status(400).send('ERE005')));
+      res.json(todo);
+    });
 });
+
 
 
 customers.route('/scheduling/add/:id').post(function (req, res, next) {
