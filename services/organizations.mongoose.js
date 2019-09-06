@@ -475,7 +475,12 @@ organizations.route('/add/user/:id').post(function (req, res, next) {
           if (!org) return next(new Error(res.status(400).send('ERE005')));
           else {
             (req.body.password = req.body.password), 10;
-            org.users.push(req.body);
+            if (org.users === undefined || org.users.length <= 0) {
+              org.users = [req.body];
+            }
+            else{
+              org.users.push(req.body);
+            }
             org
               .updateOne(org)
               .then(org => {
